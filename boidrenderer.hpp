@@ -76,7 +76,9 @@ public:
 		: bs(bs_)
 	{
 		// vertex buffer
-		glGenBuffers(1, &vertex_buffer);
+		GLuint vb;
+		glGenBuffers(1, &vb);
+		vertex_buffer = vb;
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 		glBufferData(GL_ARRAY_BUFFER, 
 			     bs.boids.size()*3*sizeof(GL_FLOAT), 

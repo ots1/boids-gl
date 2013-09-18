@@ -63,17 +63,17 @@ int main(int argc, char *argv[])
 		bs.insert(Boid(x, v));
 	}
 
-	// Initialize this after the last Boid is added to bs:
-	// dealing with buffer objects etc.
-	BoidRenderer br(bs);	
-	
-	init_glut_callback_data(&bs, &br, 1./60.);
-
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(640, 480);
 	glutCreateWindow("Boids");
 	glutDisplayFunc(&render);
 	glutIdleFunc(&update);
+
+	glewInit();
+
+	BoidRenderer br(bs);
+	init_glut_callback_data(&bs, &br, 1./60.);
+
 	glutMainLoop();
 }
