@@ -60,6 +60,9 @@ public:
 		glVertexAttribPointer(
 			attributes.position, 3, GL_FLOAT, 
 			GL_FALSE, 3*sizeof(GL_FLOAT), (void*)0);
+		glEnableVertexAttribArray(attributes.position);
+
+		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		// projection matrix etc
 

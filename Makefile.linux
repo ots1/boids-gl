@@ -1,4 +1,4 @@
 CXX=g++-4.7
-CXXFLAGS=-I/usr/X11R6/include -L/usr/X11R6/lib -lGL -lGLEW -lglut -std=c++0x -g
+CXXFLAGS=-I/usr/X11R6/include -L/usr/X11R6/lib -lGL -lGLEW -lglut -std=c++0x -O3
 simple-example : simple-example.cpp boids.cpp
 display-example : display-example.cpp boids.cpp boidrenderer.cpp

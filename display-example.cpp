@@ -34,19 +34,20 @@ static void init_glut_callback_data(BoidSystem *bs,
 
 /* The callbacks */
 extern "C"
+void render(void)
+{
+	glut_callback_data.renderer->render();
+	glutSwapBuffers();
+}
+
+extern "C"
 void update(void)
 {
 	std::cout << "timestep " << glut_callback_data.timestep
 		  << std::endl;
 	glut_callback_data.bs->update(glut_callback_data.dt);
 	glut_callback_data.timestep++;
-}
-
-extern "C"
-void render(void)
-{
-	glut_callback_data.renderer->render();
-	glutSwapBuffers();
+	render();
 }
 
 int main(int argc, char *argv[])
