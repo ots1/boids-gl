@@ -2,10 +2,6 @@
 #include "boidrenderer.hpp"
 #include "boids.hpp"
 
-const char BoidRenderer::vertex_shader_fname[] = "boidrenderer.vertex";
-const char BoidRenderer::fragment_shader_fname[] = "boidrenderer.frag";
-
-
 void show_info_log(GLuint object, PFNGLGETSHADERIVPROC glGet__iv,
 			  PFNGLGETSHADERINFOLOGPROC glGet__InfoLog)
 {
@@ -84,4 +80,132 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
 		return 0;
 	}
 	return program;
+}
+
+
+void BoidRenderer::transfer_vertex_data(void)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	GLfloat *buffer_data = (GLfloat *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+	if (!buffer_data)
+		throw std::runtime_error("could not map vertex buffer");
+	for (int i=0; i<bs.boids.size(); ++i) {
+		buffer_data[3*i] = (GLfloat)bs.boids[i].pos[0];
+		buffer_data[3*i + 1] = (GLfloat)bs.boids[i].pos[1];
+		buffer_data[3*i + 2] = (GLfloat)bs.boids[i].pos[2];
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+void BoidRenderer::update_projection_matrix(float viewport_ratio)
+{
+	/*
+	  GLfloat wf(w), hf(h);
+	
+	  GLfloat xy_scale = std::min(wf, hf) * 1.0f/fov_ratio;
+	  GLfloat r_x = xy_scale / wf,
+	  r_y = xy_scale / hf,
+	  zw_scale = 1.0f/(far_plane - near_plane),
+	  r_z = zw_scale * (near_plane + far_plane),
+	  r_w = -2.0f * zw_scale * near_plane * far_plane;
+	
+	  pmatrix = 
+	  r_x, 0.0f, 0.0f, 0.0f,
+	  0.0f, r_y, 0.0f, 0.0f,
+	  0.0f, 0.0f, r_z, 1.0f,
+	  0.0f, 0.0f, r_w, 0.0f;
+	*/
+	pmatrix = glm::perspective(fov_angle_deg, (GLfloat)viewport_ratio, 
+				   near_plane, far_plane);
+}
+
+void BoidRenderer::render(void)
+{
+	glUseProgram(program);
+
+	// vertices
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	transfer_vertex_data();
+	glVertexAttribPointer(
+		attributes.position, 3, GL_FLOAT, 
+		GL_FALSE, 3*sizeof(GL_FLOAT), (void*)0);
+	glEnableVertexAttribArray(attributes.position);
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
+
+	// model-view-projection matrices
+	glUniformMatrix4fv(uniforms.pmatrix, 1, GL_FALSE, glm::value_ptr(pmatrix));
+	glUniformMatrix4fv(uniforms.mvmatrix, 1, GL_FALSE, glm::value_ptr(mvmatrix));
+
+
+	// general things
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glPointSize(2);
+	glDrawArrays(GL_POINTS, 0, bs.boids.size());
+	glDisableVertexAttribArray(attributes.position);
+}
+
+BoidRenderer::BoidRenderer(const BoidSystem& bs_, 
+			   std::string vshader_fname,
+			   std::string fshader_fname,
+			   int width, 
+			   int height)
+	: bs(bs_), 
+	  fov_angle_deg(40.0f),
+	  near_plane(0.0625f),
+	  far_plane(256.0f),
+	  vertex_shader_fname(vshader_fname),
+	  fragment_shader_fname(fshader_fname)
+{
+	update_projection_matrix((float)width/height);
+
+	// vertex buffer
+	GLuint vb;
+	glGenBuffers(1, &vb);
+	vertex_buffer = vb;
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	glBufferData(GL_ARRAY_BUFFER, 
+		     bs.boids.size()*3*sizeof(GL_FLOAT), 
+		     NULL, GL_DYNAMIC_DRAW);
+
+	if (!vertex_buffer) 
+		throw std::runtime_error("failed to create vertex_buffer");
+
+	vertex_shader = make_shader(
+		GL_VERTEX_SHADER, vertex_shader_fname.c_str());
+	if (!vertex_shader)
+		throw std::runtime_error("failed to create vertex_shader");
+
+	fragment_shader = make_shader(
+		GL_FRAGMENT_SHADER, 
+		fragment_shader_fname.c_str());
+	if (!fragment_shader)
+		throw std::runtime_error("failed to create fragment_shader");
+
+	program = make_program(
+		vertex_shader, fragment_shader);
+	if (!program)
+		throw std::runtime_error("failed to compile shader program");
+
+	attributes.position = glGetAttribLocation(
+		program, "position");
+	if (attributes.position == -1)
+		throw std::runtime_error("failed to find 'position' attribute in shader program");
+
+	uniforms.pmatrix = glGetUniformLocation(
+		program, "pmatrix");
+	if (uniforms.pmatrix == -1)
+		throw std::runtime_error("failed to find 'pmatrix' uniform in shader program");
+	
+	uniforms.mvmatrix = glGetUniformLocation(
+		program, "mvmatrix");
+	if (uniforms.mvmatrix == -1)
+		throw std::runtime_error("failed to find 'mvmatrix' uniform in shader program");
+
+}
+
+BoidRenderer::~BoidRenderer()
+{
+	glDeleteBuffers(1, &vertex_buffer);
 }

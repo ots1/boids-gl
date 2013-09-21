@@ -2,13 +2,19 @@
 
 attribute vec3 position;
 
-const mat4 projection = mat4(0.05, 0.0, 0.0, 0.0,
+/*const mat4 projection = mat4(0.05, 0.0, 0.0, 0.0,
 			     0.0, 0.05, 0.0, 0.0,
 			     0.0, 0.0, 0.05, 0.0,
 			     0.0, 0.0, 0.0, 1.0);
+*/
+
+uniform mat4 pmatrix;
+
+uniform mat4 mvmatrix;
 
 void main()
 {
-	gl_Position = projection * vec4(position,1.0);
-	gl_PointSize = 3.0 * (gl_Position.z + 1.0);
+	gl_Position = pmatrix * mvmatrix * vec4(position,1.0);
+	//gl_PointSize = 3.0 * (gl_Position.z + 1.0);
+	gl_PointSize = 2.5;
 }

@@ -14,7 +14,7 @@ public:
 	const int y_stride;
 	const int z_stride;
 	
-	int hash(vec3 pos)
+	int hash(vec3 pos) const
 	{
 		return int(pos[0]/bin_width) 
 			+ y_stride * int(pos[1]/bin_width) 
@@ -22,7 +22,8 @@ public:
 	}
 
 	// compute the spatial index of neighbours.
-	int neigh_offset(int neigh_idx) {
+	int neigh_offset(int neigh_idx) const 
+	{
 		int x=neigh_idx % 3 - 1;
 		int y=(neigh_idx/3) % 3 - 1;
 		int z=(neigh_idx/9) % 3 - 1;
@@ -43,16 +44,40 @@ public:
 
 	// could make this more like an STL iterator
 	class iterator {
-		SpatialHash* a; 
-		int idx, neigh_idx;
-		typename std::vector<T>::iterator current;
+		const SpatialHash* a; 
+		const int idx;
+		int neigh_idx;
+		typename std::vector<T>::const_iterator current;
 	public:
+		// advance to point to the next valid element.
+		// Assumes that if neigh_idx has a corresponding
+		// vector, then 'current' points to it.  This is
+		// important for constructing the object, where if
+		// current is not set at all, the 'count' check in the
+		// while loop could fail and the 'end' check is then
+		// nonsensical.
 		void advance_to_next_valid()
 		{
-			while (current == a->h[idx + a->neigh_offset(neigh_idx)].end()) {
+			// do not wish to insert a key if it isn't present: 
+			// check the count and use c++11 at().
+			while (!(a->h.count(idx + a->neigh_offset(neigh_idx))) ||
+			       current == a->h.at(idx + a->neigh_offset(neigh_idx)).end())
+			{
 				if (++neigh_idx >= 27) break;
-				current = a->h[idx + a->neigh_offset(neigh_idx)].begin();
-			}			
+				if (a->h.count(idx + a->neigh_offset(neigh_idx)))
+					current = a->h.at(idx + a->neigh_offset(neigh_idx)).begin();
+			}
+			
+			// while (!(a->h.count(idx + a->neigh_offset(neigh_idx))) ||
+			//        current == a->h[idx + a->neigh_offset(neigh_idx)].end()) {
+			// 	while (!(a->h.count(idx + a->neigh_offset(neigh_idx))))
+			// 		if (++neigh_idx >= 27) return;
+				
+			// 	while (current == a->h.at(idx + a->neigh_offset(neigh_idx)).end()) {
+			// 		if (++neigh_idx >= 27) return;
+			// 	}
+			// }
+
 		}
 		
 		iterator& operator++()
@@ -63,7 +88,7 @@ public:
 			return (*this);
 		}
 
-		T& operator*()
+		const T& operator*()
 		{
 			return (*current);
 		}
@@ -74,9 +99,15 @@ public:
 		}		
 
 		iterator(SpatialHash& a_, vec3 x)
-			: a(&a_), idx(a_.hash(x)), neigh_idx(0), current(a->h[idx+a->neigh_offset(neigh_idx)].begin())
+			: a(&a_), idx(a_.hash(x)), neigh_idx(0)//, current(a->h[idx+a->neigh_offset(neigh_idx)].begin())
 		{
-			// advance until actually pointing to an element
+			// if there is a vector at the location where we start, set to current
+			if (a->h.count(idx + a->neigh_offset(neigh_idx)))
+				current = a->h.at(idx+a->neigh_offset(neigh_idx)).begin();
+
+			// advance until actually pointing to an
+			// element (the vector might be empty, or
+			// there might not be one.
 			advance_to_next_valid();
 		}
 	};

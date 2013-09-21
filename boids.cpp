@@ -72,20 +72,25 @@ void BoidSystem::update(double dt)
 	int max_c=0, min_c=10000000;
 	int sum_c=0;
 	int count;
-	for (auto ii=boids.begin(); ii != boids.end(); ++ii) {
-		count = ii->update_acc(h.neighbours(ii->pos));
-		sum_c += count;
-		min_c = std::min(min_c, count);
-		max_c = std::max(max_c, count);
-		ii->acc = restrict_vector(ii->acc, max_acceleration);
+	
+#       pragma omp parallel for
+	for (int i=0; i<boids.size(); ++i) {
+		count = boids[i].update_acc(h.neighbours(boids[i].pos));
+		//     sum_c += count;
+		//     min_c = std::min(min_c, count);
+		//     max_c = std::max(max_c, count);
+		boids[i].acc = restrict_vector(boids[i].acc, max_acceleration);
 	}
 	       
-	std::cout << "Counts: min=" << min_c << " max=" << max_c << " mean=" << (double)sum_c/boids.size() << std::endl;
+        //#pragma omp barrier
+	
+	//std::cout << "Counts: min=" << min_c << " max=" << max_c << " mean=" << (double)sum_c/boids.size() << std::endl;
 			
 	// integrate positions and velocities
-	for (auto ii=boids.begin(); ii != boids.end(); ++ii) {
-		ii->pos += dt * ii->vel;
-		ii->vel += dt * ii->acc;
-		ii->vel = restrict_vector(ii->vel, max_velocity);
+#       pragma omp parallel for
+	for (int i=0; i<boids.size(); ++i) {
+		boids[i].pos += dt * boids[i].vel;
+		boids[i].vel += dt * boids[i].acc;
+		boids[i].vel = restrict_vector(boids[i].vel, max_velocity);
 	}
 }	
