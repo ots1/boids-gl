@@ -1,4 +1,4 @@
 CXX=g++-mp-4.5 
-CXXFLAGS=-I/usr/local/include -std=c++0x -I/opt/local/include -L/opt/local/lib -framework OpenGL -framework GLUT -lGLEW -O3 -march=native
-simple-example : simple-example.cpp boids.cpp
-display-example : display-example.cpp boids.cpp boidrenderer.cpp
+CXXFLAGS=-I/usr/local/include -std=c++0x  -I/Users/oliver/include -I/opt/local/include -L/opt/local/lib -framework OpenGL -framework GLUT -lGLEW -O3  -fopenmp
+simple-example : simple-example.cpp boids.cpp boids.hpp
+display-example : display-example.cpp boids.cpp boids.hpp boidrenderer.cpp boidrenderer.hpp
