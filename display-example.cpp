@@ -177,13 +177,16 @@ int main(int argc, char *argv[])
 {
 	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 
-	BoidSystem bs(2.1, 20000);
+	const int num_boids = 20000;
+	const float vision_range = 2.0f;
+
+	BoidSystem bs(vision_range, num_boids);
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> rn(-50.0,50.0);
 
-	for (int i=0; i<bs.boids.capacity(); i++) {
+	for (int i=0; i<num_boids; i++) {
 		vec3 x(rn(gen), rn(gen), rn(gen));
 		vec3 v(0, 0, 0);
 		bs.insert(Boid(x, v));

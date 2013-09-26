@@ -60,6 +60,21 @@ BoidSystem::BoidSystem(double visibility_, int n_boids)
 	boids.reserve(n_boids);
 }
 
+BoidSystem::const_iterator BoidSystem::begin(void) const
+{
+	return boids.cbegin();
+}
+
+BoidSystem::const_iterator BoidSystem::end(void) const
+{
+	return boids.cend();
+}
+
+std::vector<Boid>::size_type BoidSystem::size(void) const
+{
+	return boids.size();
+}
+
 void BoidSystem::insert(Boid b)
 {
 	b.vel = restrict_vector(b.vel, max_velocity);
@@ -102,4 +117,4 @@ void BoidSystem::update(double dt)
 		boids[i].vel += dt * boids[i].acc;
 		boids[i].vel = restrict_vector(boids[i].vel, max_velocity);
 	}
-}	
+}

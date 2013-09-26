@@ -89,11 +89,18 @@ void BoidRenderer::transfer_vertex_data(void)
 	GLfloat *buffer_data = (GLfloat *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	if (!buffer_data)
 		throw std::runtime_error("could not map vertex buffer");
-	for (int i=0; i<bs.boids.size(); ++i) {
-		buffer_data[3*i] = (GLfloat)bs.boids[i].pos[0];
-		buffer_data[3*i + 1] = (GLfloat)bs.boids[i].pos[1];
-		buffer_data[3*i + 2] = (GLfloat)bs.boids[i].pos[2];
+
+	{
+		int i=0;
+		for (auto boid=bs.begin(); boid != bs.end(); ++boid) 
+		{
+			buffer_data[3*i] = (GLfloat)boid->pos[0];
+			buffer_data[3*i + 1] = (GLfloat)boid->pos[1];
+			buffer_data[3*i + 2] = (GLfloat)boid->pos[2];
+			++i;
+		}
 	}
+	
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
@@ -142,7 +149,7 @@ void BoidRenderer::render(void)
 	// draw them...
 	glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_POINTS, 0, bs.boids.size());
+	glDrawArrays(GL_POINTS, 0, bs.size());
 	glDisableVertexAttribArray(attributes.position);
 }
 
@@ -166,7 +173,7 @@ BoidRenderer::BoidRenderer(const BoidSystem& bs_,
 	vertex_buffer = vb;
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, 
-		     bs.boids.size()*3*sizeof(GL_FLOAT), 
+		     bs.size()*3*sizeof(GL_FLOAT), 
 		     NULL, GL_DYNAMIC_DRAW);
 
 	if (!vertex_buffer) 
