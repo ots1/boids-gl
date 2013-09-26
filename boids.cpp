@@ -2,11 +2,16 @@
 #include <iostream>
 #include <algorithm>
 
+static std::mt19937 rn;
+static std::normal_distribution<double> unit_normal(0.0, 1.0);
+
 int Boid::update_acc(SpatialHash<Boid*>::iterator visible)
 { 
+	
+	
 	vec3 CoM(0.0), mean_heading(0.0), avoid(0.0);
 	int count=0;
-	// calculate centre of mass, mean heading and avoidance vector in one pass
+	// calculate count, centre of mass, mean heading and avoidance vector in one pass
 	for (; !visible.end(); ++visible) {
 		if ((*visible) == this) continue;
 		if (tvmet::norm2((*visible)->pos - pos) > 2.0) continue;
@@ -18,19 +23,23 @@ int Boid::update_acc(SpatialHash<Boid*>::iterator visible)
 			avoid -= normalize(r) / (norm2(r) * norm2(r));
 		}
 	}
-	CoM /= count;
-	mean_heading /= count;
-	mean_heading -= vel;
 
-	// move towards centre of mass of visible boids
-	acc += group_scale * CoM;
-
-	// adjust velocity to match heading of the group
-	acc += heading_scale * mean_heading;
-
-	// avoid very close boids
-	acc += avoidance_scale * avoid;
-
+	if (count) {
+		CoM /= count;
+		mean_heading /= count;
+		mean_heading -= vel;
+		
+		// move towards centre of mass of visible boids
+		acc += group_scale * CoM;
+		
+		// adjust velocity to match heading of the group
+		acc += heading_scale * mean_heading;
+		
+		// avoid very close boids
+		acc += avoidance_scale * avoid;
+	} else {
+		acc = vec3(unit_normal(rn), unit_normal(rn), unit_normal(rn));
+	}
 	return count;
 }
 

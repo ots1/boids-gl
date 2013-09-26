@@ -123,6 +123,8 @@ void BoidRenderer::render(void)
 {
 	glUseProgram(program);
 
+	glEnable(GL_DEPTH_TEST);
+
 	// vertices
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 	transfer_vertex_data();
@@ -132,16 +134,14 @@ void BoidRenderer::render(void)
 	glEnableVertexAttribArray(attributes.position);
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
-
+	
 	// model-view-projection matrices
 	glUniformMatrix4fv(uniforms.pmatrix, 1, GL_FALSE, glm::value_ptr(pmatrix));
 	glUniformMatrix4fv(uniforms.mvmatrix, 1, GL_FALSE, glm::value_ptr(mvmatrix));
 
-
-	// general things
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glPointSize(2);
+	// draw them...
+	glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_POINTS, 0, bs.boids.size());
 	glDisableVertexAttribArray(attributes.position);
 }
@@ -152,9 +152,9 @@ BoidRenderer::BoidRenderer(const BoidSystem& bs_,
 			   int width, 
 			   int height)
 	: bs(bs_), 
-	  fov_angle_deg(40.0f),
+	  fov_angle_deg(60.0f),
 	  near_plane(0.0625f),
-	  far_plane(256.0f),
+	  far_plane(1024.0f),
 	  vertex_shader_fname(vshader_fname),
 	  fragment_shader_fname(fshader_fname)
 {

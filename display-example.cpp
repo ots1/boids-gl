@@ -3,6 +3,7 @@
 #include <random>
 #include <iostream>
 #include <tvmet/Matrix.h>
+#include <fenv.h>
 
 #include <GL/glew.h>
 #ifdef __APPLE__
@@ -52,7 +53,7 @@ static void init_glut_callback_data(BoidSystem *bs,
 
 	glut_callback_data.keybuffer.resize(256, false);
 	
-	glut_callback_data.player.pos =       glm::vec3(0.0f, 0.0f, -100.0f);
+	glut_callback_data.player.pos =       glm::vec3(0.0f, 0.0f, -120.0f);
 	glut_callback_data.player.look_dirn = glm::vec3(0.0f, 0.0f, 1.0f);
 	glut_callback_data.player.up_dirn =   glm::vec3(0.0f, 1.0f, 0.0f);
 }
@@ -132,8 +133,8 @@ void mouse_move(int x, int y)
 
 	if ((xrel == 0) && (yrel == 0)) return;
 
-	glm::vec3 intent = float(xrel)*glm::cross(glut_callback_data.player.up_dirn,
-						  glut_callback_data.player.look_dirn)
+	glm::vec3 intent = float(xrel)*glm::cross(glut_callback_data.player.look_dirn, 
+						  glut_callback_data.player.up_dirn)
 		- float(yrel)*glut_callback_data.player.up_dirn;
 		
 	glut_callback_data.player.look_dirn 
@@ -174,13 +175,15 @@ void key_up(unsigned char key, int x, int y)
 
 int main(int argc, char *argv[])
 {
-	BoidSystem bs(2.0, 2000);
+	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+
+	BoidSystem bs(2.1, 20000);
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<> rn(-17.0,17.0);
+	std::uniform_real_distribution<> rn(-50.0,50.0);
 
-	for (int i=0; i<2000; i++) {
+	for (int i=0; i<bs.boids.capacity(); i++) {
 		vec3 x(rn(gen), rn(gen), rn(gen));
 		vec3 v(0, 0, 0);
 		bs.insert(Boid(x, v));
@@ -189,8 +192,8 @@ int main(int argc, char *argv[])
 	const int init_window_shape[2] = { 800, 800 };
 	
 	glutInit(&argc, argv);
-//	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
+//	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(init_window_shape[0], 
 			   init_window_shape[1]);
 	glutCreateWindow("Boids");
