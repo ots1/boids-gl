@@ -3,7 +3,9 @@
 #include <random>
 #include <iostream>
 #include <tvmet/Matrix.h>
+#ifdef __GLIBC__
 #include <fenv.h>
+#endif
 
 #include <GL/glew.h>
 #ifdef __APPLE__
@@ -175,8 +177,9 @@ void key_up(unsigned char key, int x, int y)
 
 int main(int argc, char *argv[])
 {
+#ifdef __GLIBC__
 	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-
+#endif
 	const int num_boids = 20000;
 	const float vision_range = 2.0f;
 
@@ -195,8 +198,8 @@ int main(int argc, char *argv[])
 	const int init_window_shape[2] = { 800, 800 };
 	
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
-//	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+//	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(init_window_shape[0], 
 			   init_window_shape[1]);
 	glutCreateWindow("Boids");

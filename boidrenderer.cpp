@@ -94,9 +94,9 @@ void BoidRenderer::transfer_vertex_data(void)
 		int i=0;
 		for (auto boid=bs.begin(); boid != bs.end(); ++boid) 
 		{
-			buffer_data[3*i] = (GLfloat)boid->pos[0];
-			buffer_data[3*i + 1] = (GLfloat)boid->pos[1];
-			buffer_data[3*i + 2] = (GLfloat)boid->pos[2];
+			buffer_data[3*i] = (GLfloat)boid->get_pos()[0];
+			buffer_data[3*i + 1] = (GLfloat)boid->get_pos()[1];
+			buffer_data[3*i + 2] = (GLfloat)boid->get_pos()[2];
 			++i;
 		}
 	}

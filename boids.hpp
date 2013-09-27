@@ -26,6 +26,8 @@ public:
 	// update acceleration based on Boid rules
 	int update_acc(SpatialHash<Boid*>::iterator visible);
 
+	vec3 get_pos(void) const;
+
 	Boid(vec3 pos_=vec3(0.,0.,0.), vec3 vel_=vec3(0.,0.,0.));
 };
 

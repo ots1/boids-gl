@@ -5,10 +5,13 @@
 static std::mt19937 rn;
 static std::normal_distribution<double> unit_normal(0.0, 1.0);
 
+vec3 Boid::get_pos(void) const
+{
+	return pos;
+}
+
 int Boid::update_acc(SpatialHash<Boid*>::iterator visible)
 { 
-	
-	
 	vec3 CoM(0.0), mean_heading(0.0), avoid(0.0);
 	int count=0;
 	// calculate count, centre of mass, mean heading and avoidance vector in one pass
